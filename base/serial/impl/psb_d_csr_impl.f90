@@ -148,6 +148,7 @@ contains
       if (beta == dzero) then 
 
         if (alpha == done) then 
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -155,9 +156,10 @@ contains
             enddo
             y(i) = acc
           end do
-
+          !$OMP end parallel do
         else if (alpha == -done) then 
 
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -165,9 +167,9 @@ contains
             enddo
             y(i) = -acc
           end do
-
+          !$OMP end parallel do
         else 
-
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -175,13 +177,14 @@ contains
             enddo
             y(i) = alpha*acc
           end do
-
+          !$OMP end parallel do
         end if
 
 
       else if (beta == done) then 
 
-        if (alpha == done) then 
+        if (alpha == done) then
+          !$OMP parallel do private(i,j,acc)          
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -189,9 +192,9 @@ contains
             enddo
             y(i) = y(i) + acc
           end do
-
+          !$OMP end parallel do
         else if (alpha == -done) then 
-
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -199,9 +202,9 @@ contains
             enddo
             y(i) = y(i) -acc
           end do
-
+          !$OMP end parallel do
         else 
-
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -209,12 +212,12 @@ contains
             enddo
             y(i) = y(i) + alpha*acc
           end do
-
+          !$OMP end parallel do
         end if
 
       else if (beta == -done) then 
-
         if (alpha == done) then 
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -222,9 +225,9 @@ contains
             enddo
             y(i) = -y(i) + acc
           end do
-
+          !$OMP end parallel do
         else if (alpha == -done) then 
-
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -232,9 +235,9 @@ contains
             enddo
             y(i) = -y(i) -acc
           end do
-
+          !$OMP end parallel do
         else 
-
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -242,12 +245,13 @@ contains
             enddo
             y(i) = -y(i) + alpha*acc
           end do
-
+          !$OMP end parallel do
         end if
 
       else 
 
         if (alpha == done) then 
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -255,9 +259,9 @@ contains
             enddo
             y(i) = beta*y(i) + acc
           end do
-
+          !$OMP end parallel do
         else if (alpha == -done) then 
-
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -265,9 +269,9 @@ contains
             enddo
             y(i) = beta*y(i) - acc
           end do
-
+          !$OMP end parallel do
         else 
-
+          !$OMP parallel do private(i,j,acc)
           do i=1,m 
             acc  = dzero
             do j=irp(i), irp(i+1)-1
@@ -275,7 +279,7 @@ contains
             enddo
             y(i) = beta*y(i) + alpha*acc
           end do
-
+          !$OMP end parallel do
         end if
 
       end if
