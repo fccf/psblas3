@@ -408,7 +408,6 @@ if test "X$psblas_cv_fc" == X"nag" ; then
      EXTRA_OPT="-mismatch_all"
 fi
 
-
 # COPT,FCOPT are aliases for CFLAGS,FCFLAGS .
 ##############################################################################
 # Compilers variables selection 
@@ -422,7 +421,7 @@ CCOPT="$CCOPT $C99OPT"
 # Choice of our compilers, needed by Make.inc
 ##############################################################################
 if test "X$FLINK" == "X" ; then
-   FLINK=${MPF90}
+   FLINK=${FC}
 fi
 
 ##############################################################################
@@ -592,6 +591,22 @@ fi
 if test x"$MODULE_PATH" != "x" ; then
 	FINCLUDES="$FINCLUDES $MODULE_PATH"
 fi
+
+###############################################################################
+#			OpenMP compilers detection
+###############################################################################
+PAC_ARG_OPENMP()
+
+if test x"$pac_cv_openmp" == x"yes" ; then
+   AC_LANG([Fortran])
+   AC_OPENMP()
+   FCOPT="$FCOPT $OPENMP_FCFLAGS"
+   FLINK="$FLINK $OPENMP_FCFLAGS"	
+   AC_LANG([C])
+   AC_OPENMP()
+   CCOPT="$CCOPT $OPENMP_CFLAGS"
+fi
+
 
 ###############################################################################
 #	Parachute rules for ar and ranlib ... (could cause problems)
