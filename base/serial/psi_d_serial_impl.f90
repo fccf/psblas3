@@ -30,7 +30,7 @@
 !   
 !    
 subroutine psi_daxpby(m,n,alpha, x, beta, y, info)
-  
+
   use psb_const_mod
   use psb_error_mod
   implicit none 
@@ -87,7 +87,7 @@ subroutine psi_daxpby(m,n,alpha, x, beta, y, info)
 end subroutine psi_daxpby
 
 subroutine psi_daxpbyv(m,alpha, x, beta, y, info)
-  
+
   use psb_const_mod
   use psb_error_mod
   implicit none 
@@ -291,7 +291,7 @@ subroutine psi_dgthzmm(n,k,idx,x,y)
   ! Locals
   integer(psb_ipk_) :: i
 
-  
+
   do i=1,n
     y(i,1:k)=x(idx(i),1:k)
   end do
@@ -337,7 +337,7 @@ subroutine psi_dgthzv(n,idx,x,y)
 end subroutine psi_dgthzv
 
 subroutine psi_dsctmm(n,k,idx,x,beta,y)
-  
+
   use psb_const_mod
   implicit none
 
@@ -363,7 +363,7 @@ subroutine psi_dsctmm(n,k,idx,x,beta,y)
 end subroutine psi_dsctmm
 
 subroutine psi_dsctmv(n,k,idx,x,beta,y)
-  
+
   use psb_const_mod
   implicit none
 
@@ -595,3 +595,170 @@ subroutine  daxpby(m, n, alpha, X, lldx, beta, Y, lldy, info)
   return
 
 end subroutine daxpby
+
+subroutine  daxpbyv(m, alpha, X, lldx, beta, Y, lldy, info)
+  use psb_const_mod
+  use psb_error_mod
+  implicit none 
+  integer(psb_ipk_) :: m, lldx, lldy, info
+  real(psb_dpk_) X(lldx), Y(lldy)
+  real(psb_dpk_) alpha, beta
+  integer(psb_ipk_) :: i, j
+  integer(psb_ipk_) :: int_err(5)
+  character  name*20
+  name='daxpby'
+
+
+  !
+  !     Error handling
+  !
+  info = psb_success_
+  if (m.lt.0) then 
+    info=psb_err_iarg_neg_
+    int_err(1)=1
+    int_err(2)=m
+    call fcpsb_errpush(info,name,int_err)
+    goto 9999
+  else if (lldx.lt.max(1,m)) then 
+    info=psb_err_iarg_not_gtia_ii_
+    int_err(1)=5
+    int_err(2)=1
+    int_err(3)=lldx
+    int_err(4)=m
+    call fcpsb_errpush(info,name,int_err)
+    goto 9999
+  else if (lldy.lt.max(1,m)) then 
+    info=psb_err_iarg_not_gtia_ii_
+    int_err(1)=8
+    int_err(2)=1
+    int_err(3)=lldy
+    int_err(4)=m
+    call fcpsb_errpush(info,name,int_err)
+    goto 9999
+  endif
+
+  if (alpha.eq.dzero) then 
+    if (beta.eq.dzero) then 
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = dzero
+      enddo
+      !$OMP end parallel do
+    else if (beta.eq.done) then
+      !   
+      !        Do nothing! 
+      !               
+
+    else if (beta.eq.-done) then 
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = - y(i)
+      enddo
+      !$OMP end parallel do
+    else  
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) =  beta*y(i)
+      enddo
+      !$OMP end parallel do
+    endif
+
+  else if (alpha.eq.done) then
+
+    if (beta.eq.dzero) then 
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = x(i)
+      enddo
+      !$OMP end parallel do
+    else if (beta.eq.done) then
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = x(i) + y(i)
+      enddo
+      !$OMP end parallel do
+
+    else if (beta.eq.-done) then 
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = x(i) - y(i)
+      enddo
+      !$OMP end parallel do
+      
+    else  
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = x(i) + beta*y(i)
+      enddo
+      !$OMP end parallel do
+      
+    endif
+
+  else if (alpha.eq.-done) then 
+
+    if (beta.eq.dzero) then 
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = -x(i)
+      enddo
+      !$OMP end parallel do
+      
+    else if (beta.eq.done) then
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = -x(i) + y(i)
+      enddo
+      !$OMP end parallel do
+
+    else if (beta.eq.-done) then 
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = -x(i) - y(i)
+      enddo
+      !$OMP end parallel do
+    else  
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = -x(i) + beta*y(i)
+      enddo
+      !$OMP end parallel do
+    endif
+
+  else  
+
+    if (beta.eq.dzero) then 
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = alpha*x(i)
+      enddo
+      !$OMP end parallel do
+    else if (beta.eq.done) then
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = alpha*x(i) + y(i)
+      enddo
+      !$OMP end parallel do
+
+    else if (beta.eq.-done) then 
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = alpha*x(i) - y(i)
+      enddo
+      !$OMP end parallel do
+    else  
+      !$OMP parallel do private(i)
+      do i=1,m 
+        y(i) = alpha*x(i) + beta*y(i) 
+      enddo
+      !$OMP end parallel do
+    endif
+
+  endif
+
+  return
+
+9999 continue
+  call fcpsb_serror()
+  return
+
+end subroutine daxpbyv

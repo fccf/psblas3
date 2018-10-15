@@ -958,9 +958,11 @@ contains
     info = 0
     if (y%is_dev()) call y%sync()
     n = min(size(y%v), size(x))
+    !$OMP parallel do private(i)
     do i=1, n 
       y%v(i) = y%v(i)*x(i)
     end do
+    !$OMP end parallel do
     call y%set_host()
 
   end subroutine d_base_mlt_a
@@ -995,52 +997,72 @@ contains
       if (beta == done) then 
         return 
       else
+        !$OMP parallel do private(i)
         do i=1, n
           z%v(i) = beta*z%v(i)
         end do
+        !$OMP end parallel do
       end if
     else
       if (alpha == done) then 
         if (beta == dzero) then 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = y(i)*x(i)
           end do
+          !$OMP end parallel do
         else if (beta == done) then 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = z%v(i) + y(i)*x(i)
           end do
+          !$OMP end parallel do
         else 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = beta*z%v(i) + y(i)*x(i)
           end do
+          !$OMP end parallel do
         end if
       else if (alpha == -done) then 
         if (beta == dzero) then 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = -y(i)*x(i)
           end do
+          !$OMP end parallel do
         else if (beta == done) then 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = z%v(i) - y(i)*x(i)
           end do
+          !$OMP end parallel do
         else 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = beta*z%v(i) - y(i)*x(i)
           end do
+          !$OMP end parallel do
         end if
       else
         if (beta == dzero) then 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = alpha*y(i)*x(i)
           end do
+          !$OMP end parallel do
         else if (beta == done) then 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = z%v(i) + alpha*y(i)*x(i)
           end do
+          !$OMP end parallel do
         else 
+          !$OMP parallel do private(i)
           do i=1, n 
             z%v(i) = beta*z%v(i) + alpha*y(i)*x(i)
           end do
+          !$OMP end parallel do
         end if
       end if
     end if

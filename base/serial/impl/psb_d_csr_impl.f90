@@ -454,17 +454,10 @@ subroutine psb_d_csr_csmm(alpha,a,x,beta,y,info,trans)
 
   nc = min(size(x,2) , size(y,2) )
 
-  allocate(acc(nc), stat=info)
-  if(info /= psb_success_) then
-    info=psb_err_from_subroutine_
-    call psb_errpush(info,name,a_err='allocate')
-    goto 9999
-  end if
   
   call  psb_d_csr_csmm_inner(m,n,nc,alpha,a%irp,a%ja,a%val, &
        & a%is_triangle(),a%is_unit(),x,size(x,1,kind=psb_ipk_), &
-       & beta,y,size(y,1,kind=psb_ipk_),tra,ctra,acc) 
-
+       & beta,y,size(y,1,kind=psb_ipk_),tra,ctra) 
 
   call psb_erractionrestore(err_act)
   return
@@ -475,25 +468,31 @@ subroutine psb_d_csr_csmm(alpha,a,x,beta,y,info,trans)
 
 contains
   subroutine psb_d_csr_csmm_inner(m,n,nc,alpha,irp,ja,val,&
-       & is_triangle,is_unit,x,ldx,beta,y,ldy,tra,ctra,acc) 
+       & is_triangle,is_unit,x,ldx,beta,y,ldy,tra,ctra) 
     integer(psb_ipk_), intent(in)             :: m,n,ldx,ldy,nc,irp(*),ja(*)
     real(psb_dpk_), intent(in)      :: alpha, beta, x(ldx,*),val(*)
     real(psb_dpk_), intent(inout)   :: y(ldy,*)
     logical, intent(in)             :: is_triangle,is_unit,tra,ctra
 
-    real(psb_dpk_), intent(inout)   :: acc(*)
-    integer(psb_ipk_) :: i,j,k, ir, jc
-
+    real(psb_dpk_), allocatable, save  :: acc(:)
+    !$OMP  threadprivate(acc)    
+    integer(psb_ipk_) :: i,j,k, ir, jc, info
+    
+    allocate(acc(nc), stat=info)
 
     if (alpha == dzero) then
       if (beta == dzero) then
+        !$OMP parallel do private(i,j)
         do i = 1, m
           y(i,1:nc) = dzero
         enddo
+        !$OMP end parallel do
       else
+        !$OMP parallel do private(i,j)
         do  i = 1, m
           y(i,1:nc) = beta*y(i,1:nc)
         end do
+        !$OMP end parallel do
       endif
       return
     end if
@@ -501,7 +500,8 @@ contains
     if ((.not.tra).and.(.not.ctra)) then 
       if (beta == dzero) then 
 
-        if (alpha == done) then 
+        if (alpha == done) then
+          !$OMP parallel do copyin(acc) private(i,j)
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -509,9 +509,10 @@ contains
             enddo
             y(i,1:nc) = acc(1:nc)
           end do
-
+          !$OMP end parallel do
         else if (alpha == -done) then 
 
+          !$OMP parallel do private(i,j) copyin(acc) 
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -519,9 +520,10 @@ contains
             enddo
             y(i,1:nc) = -acc(1:nc)
           end do
-
+          !$OMP end parallel do
         else 
 
+          !$OMP parallel do private(i,j) copyin(acc)
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -529,6 +531,7 @@ contains
             enddo
             y(i,1:nc) = alpha*acc(1:nc)
           end do
+          !$OMP end parallel do
 
         end if
 
@@ -536,6 +539,7 @@ contains
       else if (beta == done) then 
 
         if (alpha == done) then 
+          !$OMP parallel do private(i,j) copyin(acc)
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -543,9 +547,11 @@ contains
             enddo
             y(i,1:nc) = y(i,1:nc) + acc(1:nc)
           end do
+          !$OMP end parallel do
 
         else if (alpha == -done) then 
 
+          !$OMP parallel do private(i,j) copyin(acc)
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -553,9 +559,11 @@ contains
             enddo
             y(i,1:nc) = y(i,1:nc) -acc(1:nc)
           end do
+          !$OMP end parallel do
 
         else 
 
+          !$OMP parallel do private(i,j) copyin(acc)
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -563,12 +571,14 @@ contains
             enddo
             y(i,1:nc) = y(i,1:nc) + alpha*acc(1:nc)
           end do
+          !$OMP end parallel do
 
         end if
 
       else if (beta == -done) then 
 
         if (alpha == done) then 
+          !$OMP parallel do private(i,j) copyin(acc)
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -576,9 +586,11 @@ contains
             enddo
             y(i,1:nc) = -y(i,1:nc) + acc(1:nc)
           end do
+          !$OMP end parallel do
 
         else if (alpha == -done) then 
 
+          !$OMP parallel do private(i,j) copyin(acc)
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -586,9 +598,11 @@ contains
             enddo
             y(i,1:nc) = -y(i,1:nc) -acc(1:nc)
           end do
+          !$OMP end parallel do
 
         else 
 
+          !$OMP parallel do private(i,j) copyin(acc)
           do i=1,m 
             acc(1:nc)  = dzero
             do j=irp(i), irp(i+1)-1
@@ -596,6 +610,7 @@ contains
             enddo
             y(i,1:nc) = -y(i,1:nc) + alpha*acc(1:nc)
           end do
+          !$OMP end parallel do
 
         end if
 
@@ -736,6 +751,7 @@ contains
       end do
     end if
 
+    deallocate(acc)
   end subroutine psb_d_csr_csmm_inner
 
 end subroutine psb_d_csr_csmm
