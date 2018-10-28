@@ -1195,10 +1195,14 @@ contains
     class(psb_d_base_vect_type), intent(inout) :: x
     integer(psb_ipk_), intent(in)           :: n
     real(psb_dpk_)                :: res
-    
+    integer(psb_ipk_) :: i
     if (x%is_dev()) call x%sync()
-    res =  maxval(abs(x%v(1:n)))
-
+    res = dzero
+    !$OMP parallel do private(i) reduction(max: res)
+    do i=1,n
+      res =  max(abs(x%v(i)),res)
+    end do
+    !$OMP end parallel do 
   end function d_base_amax
 
   !
@@ -1211,10 +1215,14 @@ contains
     class(psb_d_base_vect_type), intent(inout) :: x
     integer(psb_ipk_), intent(in)           :: n
     real(psb_dpk_)                :: res
-    
+    integer(psb_ipk_) :: i 
     if (x%is_dev()) call x%sync()
-    res =  sum(abs(x%v(1:n)))
-
+    res = dzero
+    !$OMP parallel do private(i) reduction(+: res)
+    do i=1,n
+      res =  res +abs(x%v(i))
+    end do
+    !$OMP end parallel do 
   end function d_base_asum
   
   
