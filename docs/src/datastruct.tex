@@ -6,7 +6,7 @@ In this chapter we  illustrate the  data structures used for definition of
 routines interfaces. They  include data structures for sparse matrices,
 communication descriptors and preconditioners.%%  These data structures
 %% are used for calling PSBLAS routines in Fortran~90 language and will
-%% be used to next chapters containing these callings.  
+%% be used to next chapters containing these callings.
 
 All the data types and the basic subroutine interfaces related to
 descriptors and sparse matrices are defined in
@@ -15,16 +15,16 @@ user subroutine that makes use of the library. The preconditioners are
 defined in the module \verb|psb_prec_mod|
 
 Integer, real and complex data types are parametrized with a kind type
-defined in the library as follows: 
+defined in the library as follows:
 \begin{description}
 \item[psb\_spk\_] Kind parameter for short precision real and complex
   data; corresponds to a \verb|REAL| declaration and is
-  normally 4 bytes; 
+  normally 4 bytes;
 \item[psb\_dpk\_] Kind parameter for long precision real and complex
   data; corresponds to a \verb|DOUBLE PRECISION| declaration and is
   normally 8 bytes;
 \item[psb\_mpk\_] Kind parameter for 4-bytes integer data, as is
-  always used by MPI; 
+  always used by MPI;
 \item[psb\_epk\_] Kind parameter for 8-bytes integer data, as is
   always used by the \verb|sizeof| methods;
 \item[psb\_ipk\_] Kind parameter for ``local'' integer indices and data;
@@ -34,31 +34,31 @@ defined in the library as follows:
 \end{description}
 The integer kinds for local and global indices can be chosen at
 configure time to hold 4 or 8 bytes, with the global indices at least
-as large as the local ones. 
+as large as the local ones.
 Together with the classes attributes we also discuss their
 methods.  Most methods detailed here only act on the local variable,
 i.e. their action is purely local and asynchronous unless otherwise
-stated. 
+stated.
 The list of methods here is not completely exhaustive; many methods,
 especially those that alter the contents of the various objects, are
 usually not needed by the end-user, and therefore are described in the
-developer's documentation. 
+developer's documentation.
 
 
 \subsection{Descriptor data structure}
 \label{sec:desc}
 All the general matrix informations and elements to be
 exchanged among processes are stored within a data structure of the
-type \hypertarget{descdata}{{\tt psb\_desc\_type}}. 
+type \hypertarget{descdata}{{\tt psb\_desc\_type}}.
 Every structure of this type is associated with a discretization
 pattern and enables data communications and other operations that are
-necessary for implementing the various algorithms of interest to us. 
+necessary for implementing the various algorithms of interest to us.
 
 The data structure itself \verb|psb_desc_type| can be treated as an
 opaque object handled via the   tools routines of
 Sec.~\ref{sec:toolsrout} or the query routines detailed below;
-nevertheless we include here a  description for the curious 
-reader. 
+nevertheless we include here a  description for the curious
+reader.
 
 First we describe the \verb|psb_indx_map| type. This is a data
 structure that keeps track of a certain number of basic issues such
@@ -70,21 +70,21 @@ as:
 \item The local set of indices, including:
 \begin{itemize}
 \item The number of local indices (and local rows);
-\item The number of halo indices (and therefore local columns); 
-\item The global indices corresponding to the local ones. 
+\item The number of halo indices (and therefore local columns);
+\item The global indices corresponding to the local ones.
 \end{itemize}
 \end{itemize}
 There are many different schemes for storing these data; therefore
 there are a number of types extending the base one, and the descriptor
 structure holds a polymorphic object whose dynamic type can be any of
-the extended  types. 
+the extended  types.
 The methods associated with this data type answer the following
 queries:
 \begin{itemize}
 \item For a given set of local indices, find the corresponding indices
   in the global numbering;
 \item For a given set of global indices, find the corresponding
-  indices in the local numbering, if any, or return an invalid 
+  indices in the local numbering, if any, or return an invalid
 \item Add a global index to the set of halo indices;
 \item Find the process  owner of each member of a set of global
   indices.
@@ -136,28 +136,28 @@ ecurrent process:
 \begin{enumerate}
 \item Overlap point index;
 \item Number of processes sharing that overlap points;
-\item Index of a ``master'' process: 
+\item Index of a ``master'' process:
 \end{enumerate}
 Specified as: an allocatable integer array of rank two.
 \item [{\bf bnd\_elem}] A list of all boundary points, i.e. points
   that have a connection with other processes.
 \end{description}
-The Fortran~2003 declaration  for \verb|psb_desc_type| structures is 
+The Fortran~2003 declaration  for \verb|psb_desc_type| structures is
 as follows:
 \begin{figure}[h!]
   % \begin{Sbox}
 \begin{center}
     \begin{minipage}[tl]{0.9\textwidth}
-\begin{verbatim} 
-type psb_desc_type 
+\begin{verbatim}
+type psb_desc_type
     class(psb_indx_map), allocatable :: indxmap
     type(psb_i_vect_type) :: v_halo_index
     type(psb_i_vect_type) :: v_ext_index
     type(psb_i_vect_type) :: v_ovrlap_index
-    type(psb_i_vect_type) :: v_ovr_mst_idx 
+    type(psb_i_vect_type) :: v_ovr_mst_idx
     integer, allocatable  :: ovrlap_elem(:,:)
     integer, allocatable  :: bnd_elem(:)
-end type psb_desc_type 
+end type psb_desc_type
 \end{verbatim}
     \end{minipage}
   \end{center}
@@ -174,13 +174,13 @@ state, which can take the following values:
 \begin{description}
 \item[Build:] State entered after the first allocation, and before the
   first assembly; in this state it is possible to add communication
-  requirements among different processes. 
+  requirements among different processes.
 \item[Assembled:] State entered after the assembly; computations using
   the associated sparse matrix, such as matrix-vector products, are
   only possible   in this state.
 \end{description}
 
-\subsubsection{Descriptor Methods} 
+\subsubsection{Descriptor Methods}
 
 \subsubsection*{get\_local\_rows --- Get number of local rows}
 \addcontentsline{toc}{paragraph}{get\_local\_rows}
@@ -204,7 +204,7 @@ Scope: {\bf local}.\\
 \item[Function value] The number of local rows, i.e. the number of
   rows owned by the current process; as explained in~\ref{sec:intro},
   it is equal to $|{\cal I}_i| + |{\cal B}_i|$. The returned value is
-  specific to the calling process. 
+  specific to the calling process.
 \end{description}
 
 
@@ -229,9 +229,9 @@ Scope: {\bf local}.\\
 \item[\bf On Return]
 \item[Function value] The number of local cols, i.e. the number of
   indices used by the current process, including both local and halo
-  indices; as explained in~\ref{sec:intro}, 
+  indices; as explained in~\ref{sec:intro},
   it is equal to  $|{\cal I}_i| + |{\cal B}_i| +|{\cal H}_i|$. The
-  returned value is specific to the calling process. 
+  returned value is specific to the calling process.
 \end{description}
 
 
@@ -255,7 +255,7 @@ Scope: {\bf local}.\\
 \begin{description}
 \item[\bf On Return]
 \item[Function value] The number of global rows, i.e. the size of the
-  global index space. 
+  global index space.
 \end{description}
 
 \subsubsection*{get\_global\_cols --- Get number of global cols}
@@ -278,12 +278,12 @@ Scope: {\bf local}.\\
 \begin{description}
 \item[\bf On Return]
 \item[Function value] The number of global cols; usually this is equal
-  to the number of global rows. 
+  to the number of global rows.
 \end{description}
 
 
 \subsubsection*{get\_global\_indices --- Get vector of global indices}
-\addcontentsline{toc}{paragraph}{get\_global\_rows}
+\addcontentsline{toc}{paragraph}{get\_global\_indices}
 
 \begin{verbatim}
 myidx = desc%get_global_indices([owned])
@@ -296,7 +296,7 @@ myidx = desc%get_global_indices([owned])
 Scope: {\bf local}.\\
 Type: {\bf required}.\\
 \item[owned] Choose if you only want owned indices
-  (\verb|owned=.true.|) or also halo indices (\verb|owned=.false.|). 
+  (\verb|owned=.true.|) or also halo indices (\verb|owned=.false.|).
 Scope: {\bf local}.\\
 Type: {\bf optional}; default: \verb|.true.|.\\
 % Intent: {\bf in}.\\
@@ -306,7 +306,7 @@ Type: {\bf optional}; default: \verb|.true.|.\\
 \begin{description}
 \item[\bf On Return]
 \item[Function value] The global indices, returned as an allocatable
-  integer array of rank 1. 
+  integer array of rank 1.
 \end{description}
 
 
@@ -353,7 +353,7 @@ Scope: {\bf local}.\\
 \begin{description}
 \item[\bf On Return]
 \item[descout] A copy of the input object.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 
@@ -377,7 +377,7 @@ Specified as: a object of type derived from (integer) \vbasedata.
 \end{description}
 The \verb|mold|  arguments may be
 employed to interface with special devices, such as GPUs and other
-accelerators. 
+accelerators.
 
 
 
@@ -392,7 +392,7 @@ ith = psb_cd_get_large_threshold()
 \begin{description}
 \item[Type:] Asynchronous.
 \item[\bf On Return]
-\item[Function value] The current value for the size threshold. 
+\item[Function value] The current value for the size threshold.
 
 \end{description}
 
@@ -419,7 +419,7 @@ Note: the threshold value is only queried by the library at the time a
 call to \verb|psb_cdall| is executed, therefore changing the threshold
 has no effect on communication descriptors that have already been
 initialized. Moreover the threshold must have the same value on all
-processes. 
+processes.
 
 \subsubsection{Named Constants}
 \label{sec:cd_constants}
@@ -450,7 +450,7 @@ processes.
 %%   current process
 %% \item[psb\_ctxt\_] Entry holding a copy of the BLACS communication context
 %% \item[psb\_desc\_asb\_] State of the descriptor: assembled,
-%%       i.e. suitable for computational tasks. 
+%%       i.e. suitable for computational tasks.
 %% \item[psb\_desc\_bld\_] State of the descriptor: build, must be
 %%   assembled before computational use.
 \end{description}
@@ -459,12 +459,12 @@ processes.
 \subsection{Sparse Matrix class}
 \label{sec:spmat}
 The \hypertarget{spdata}{{\tt psb\_Tspmat\_type}} class
-contains all information about the local portion of the sparse matrix and   
-its storage mode. Its design is 
+contains all information about the local portion of the sparse matrix and
+its storage mode. Its design is
 based on the STATE design pattern~\cite{DesignPatterns} as detailed
 in~\cite{Sparse03}; the type declaration is shown in
 figure~\ref{fig:spmattype} where \verb|T| is a placeholder for the
-data type and precision variants 
+data type and precision variants
 \begin{description}
 \item[S] Single precision real;
 \item[D] Double precision real;
@@ -475,14 +475,14 @@ The actual data is contained in the polymorphic component \verb|a%a|
 of type  \hypertarget{spbasedata}{{\tt psb\_T\_base\_sparse\_mat}}; its
 specific layout can be chosen dynamically among the predefined types,
 or an entirely new storage layout can be implemented and passed to the
-library at runtime via the \verb|psb_spasb| routine. 
+library at runtime via the \verb|psb_spasb| routine.
 \begin{figure}[h!]
   % \begin{Sbox}
 \begin{center}
     \begin{minipage}[tl]{0.85\textwidth}
 \begin{verbatim}
   type :: psb_Tspmat_type
-    class(psb_T_base_sparse_mat), allocatable  :: a 
+    class(psb_T_base_sparse_mat), allocatable  :: a
   end type  psb_Tspmat_type
 \end{verbatim}
     \end{minipage}
@@ -492,16 +492,16 @@ library at runtime via the \verb|psb_spasb| routine.
 %   \begin{center}
 %     \fbox{\TheSbox}
 %   \end{center}
-  \caption{\label{fig:spmattype} 
+  \caption{\label{fig:spmattype}
     The PSBLAS defined data type that
-    contains a sparse matrix.} 
+    contains a sparse matrix.}
 \end{figure}
 The following very common formats are precompiled in  PSBLAS and thus
-are always available: 
+are always available:
 \begin{description}
-\item[psb\_T\_coo\_sparse\_mat] Coordinate storage; 
-\item[psb\_T\_csr\_sparse\_mat] Compressed storage by rows; 
-\item[psb\_T\_csc\_sparse\_mat] Compressed storage by columns; 
+\item[psb\_T\_coo\_sparse\_mat] Coordinate storage;
+\item[psb\_T\_csr\_sparse\_mat] Compressed storage by rows;
+\item[psb\_T\_csc\_sparse\_mat] Compressed storage by columns;
 \end{description}
 The inner sparse matrix has an associated state, which can take the
 following values:
@@ -517,7 +517,7 @@ following values:
   possible to enter coefficients for already existing nonzero entries.
 \end{description}
 The only storage variant supporting the build state is COO; all other
-variants are obtained by conversion to/from it. 
+variants are obtained by conversion to/from it.
 
 \subsubsection{Sparse Matrix Methods}
 
@@ -667,16 +667,16 @@ Scope: {\bf local}\\
 \item[\bf On Return]
 \item[Function value] A short string describing the dynamic type of
   the matrix. Predefined values include \verb|NULL|, \verb|COO|,
-  \verb|CSR| and \verb|CSC|. 
+  \verb|CSR| and \verb|CSC|.
 \end{description}
 
 \subsubsection*{is\_bld, is\_upd, is\_asb  --- Status check}
 \addcontentsline{toc}{paragraph}{is\_bld, is\_upd, is\_asb }
 
 \begin{verbatim}
-if (a%is_bld()) then 
-if (a%is_upd()) then 
-if (a%is_asb()) then 
+if (a%is_bld()) then
+if (a%is_upd()) then
+if (a%is_asb()) then
 \end{verbatim}
 
 \begin{description}
@@ -692,7 +692,7 @@ Scope: {\bf local}\\
 \begin{description}
 \item[\bf On Return]
 \item[Function value] A \verb|logical| value indicating whether the
-  matrix is in the Build, Update or Assembled state, respectively. 
+  matrix is in the Build, Update or Assembled state, respectively.
 \end{description}
 
 \subsubsection*{is\_lower, is\_upper, is\_triangle, is\_unit  ---
@@ -700,10 +700,10 @@ Scope: {\bf local}\\
 \addcontentsline{toc}{paragraph}{is\_lower, is\_upper, is\_triangle, is\_unit}
 
 \begin{verbatim}
-if (a%is_triangle()) then 
-if (a%is_upper()) then 
-if (a%is_lower()) then 
-if (a%is_unit()) then 
+if (a%is_triangle()) then
+if (a%is_upper()) then
+if (a%is_lower()) then
+if (a%is_unit()) then
 \end{verbatim}
 
 \begin{description}
@@ -721,7 +721,7 @@ Scope: {\bf local}\\
 \item[Function value] A \verb|logical| value indicating whether the
   matrix is triangular; if \verb|is_triangle()| returns \verb|.true.|
   check also if it is lower, upper and with a unit (i.e. assumed)
-  diagonal. 
+  diagonal.
 \end{description}
 
 
@@ -751,11 +751,11 @@ Type: optional.
 \item[\bf On Return]
 \item[b,a] A copy  of \verb|a| with a new storage format.\\
 A variable of type \verb|psb_Tspmat_type|.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 The \verb|mold|  arguments may be
 employed to interface with special devices, such as GPUs and other
-accelerators. 
+accelerators.
 
 
 \subsubsection*{csclip --- Reduce to a submatrix}
@@ -767,7 +767,7 @@ accelerators.
 
 Returns the submatrix \verb|A(imin:imax,jmin:jmax)|, optionally
 rescaling row/col indices to the range
-\verb|1:imax-imin+1,1:jmax-jmin+1|.  
+\verb|1:imax-imin+1,1:jmax-jmin+1|.
 \begin{description}
 \item[Type:] Asynchronous.
 \item[\bf On Entry]
@@ -783,7 +783,7 @@ Type: optional.
 \item[\bf On Return]
 \item[b] A copy  of a submatrix of \verb|a|.\\
 A variable of type \verb|psb_Tspmat_type|.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 \subsubsection*{clean\_zeros --- Eliminate zero coefficients}
@@ -807,7 +807,7 @@ Scope: {\bf local}.\\
 \item[\bf On Return]
 \item[a] The matrix  \verb|a| without zero coefficients.\\
 A variable of type \verb|psb_Tspmat_type|.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 \subsubsection*{get\_diag --- Get main diagonal}
@@ -828,7 +828,7 @@ Scope: {\bf local}.\\
 \item[\bf On Return]
 \item[d] A copy  of the main diagonal.\\
 A one-dimensional array of the appropriate type.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 
@@ -850,7 +850,7 @@ Scope: {\bf local}.\\
 \item[\bf On Return]
 \item[b] A copy  of  \verb|a| without the main diagonal.\\
 A variable of type \verb|psb_Tspmat_type|.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 
@@ -864,7 +864,7 @@ A variable of type \verb|psb_Tspmat_type|.
 Returns the lower triangular part of submatrix
 \verb|A(imin:imax,jmin:jmax)|, optionally rescaling row/col indices to
 the range \verb|1:imax-imin+1,1:jmax-jmin+1| and returing the
-complementary upper triangle. 
+complementary upper triangle.
 \begin{description}
 \item[Type:] Asynchronous.
 \item[\bf On Entry]
@@ -872,7 +872,7 @@ complementary upper triangle.
 A variable of type \verb|psb_Tspmat_type|.\\
 Scope: {\bf local}.\\
 \item[diag] Include diagonals up to this one; \verb|diag=1| means the
-  first superdiagonal, \verb|diag=-1| means the first subdiagonal. 
+  first superdiagonal, \verb|diag=-1| means the first subdiagonal.
 Default 0.
 \item[imin,imax,jmin,jmax] Minimum and maximum row and column indices.\\
 Type: optional.
@@ -885,7 +885,7 @@ Type: optional.
 A variable of type \verb|psb_Tspmat_type|.
 \item[u] (optional) A copy  of the upper triangle of \verb|a|.\\
 A variable of type \verb|psb_Tspmat_type|.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 \subsubsection*{triu --- Return the upper triangle}
@@ -898,7 +898,7 @@ A variable of type \verb|psb_Tspmat_type|.
 Returns the upper triangular part of submatrix
 \verb|A(imin:imax,jmin:jmax)|, optionally rescaling row/col indices to
 the range \verb|1:imax-imin+1,1:jmax-jmin+1|, and returing the
-complementary lower triangle. 
+complementary lower triangle.
 \begin{description}
 \item[Type:] Asynchronous.
 \item[\bf On Entry]
@@ -906,7 +906,7 @@ complementary lower triangle.
 A variable of type \verb|psb_Tspmat_type|.\\
 Scope: {\bf local}.\\
 \item[diag] Include diagonals up to this one; \verb|diag=1| means the
-  first superdiagonal, \verb|diag=-1| means the first subdiagonal. 
+  first superdiagonal, \verb|diag=-1| means the first subdiagonal.
 Default 0.
 \item[imin,imax,jmin,jmax] Minimum and maximum row and column indices.\\
 Type: optional.
@@ -919,7 +919,7 @@ Type: optional.
 A variable of type \verb|psb_Tspmat_type|.
 \item[l] (optional) A copy  of the lower triangle of \verb|a|.\\
 A variable of type \verb|psb_Tspmat_type|.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 
@@ -937,7 +937,7 @@ call  psb_set_mat_default(a)
 \item[Type:] Asynchronous.
 \item[\bf On Entry]
 \item[a] a variable of \verb|class(psb_T_base_sparse_mat)|  requesting
-  a new default storage format.\\ 
+  a new default storage format.\\
 Type: required.
 \end{description}
 
@@ -965,7 +965,7 @@ Scope: {\bf local}.\\
 \begin{description}
 \item[\bf On Return]
 \item[b] A copy of the input object.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 
@@ -978,7 +978,7 @@ Scope: {\bf local}.\\
 %%   given row in a sparse matrix
 \item[psb\_dupl\_ovwrt\_] Duplicate coefficients should be overwritten
   (i.e. ignore duplications)
-\item[psb\_dupl\_add\_] Duplicate coefficients should be added;	         
+\item[psb\_dupl\_add\_] Duplicate coefficients should be added;
 \item[psb\_dupl\_err\_] Duplicate coefficients should trigger an error conditino
 \item[psb\_upd\_dflt\_] Default update strategy for matrix coefficients;
 \item[psb\_upd\_srch\_] Update strategy based on search into the data structure;
@@ -992,16 +992,16 @@ Scope: {\bf local}.\\
 The \hypertarget{vdata}{{\tt psb\_T\_vect\_type}} data structure
 encapsulates the dense vectors in a way similar to sparse matrices,
 i.e. including a base type \hypertarget{vbasedata}{{\tt
-    psb\_T\_base\_vect\_type}}.  
+    psb\_T\_base\_vect\_type}}.
 The user will not, in general, access the vector components directly,
 but rather via the routines of sec.~\ref{sec:toolsrout}. Among other
 simple things, we define here an extraction method that can be used to
 get a full copy of the part of the vector stored on the local
-process. 
+process.
 
  The type declaration is shown in
 figure~\ref{fig:vectype} where \verb|T| is a placeholder for the
-data type and precision variants 
+data type and precision variants
 \begin{description}
 \item[I] Integer;
 \item[S] Single precision real;
@@ -1009,12 +1009,12 @@ data type and precision variants
 \item[C] Single precision complex;
 \item[Z] Double precision complex.
 \end{description}
-The actual data is contained in the polymorphic component \verb|v%v|; 
+The actual data is contained in the polymorphic component \verb|v%v|;
 the separation between the application and the actual data is
 essential for cases where it is necessary to link to data storage made
 available elsewhere outside the direct control of the
 compiler/application, e.g. data stored in a graphics  accelerator's
-private memory. 
+private memory.
 \begin{figure}[h!]
   % \begin{Sbox}
 \begin{center}
@@ -1025,7 +1025,7 @@ private memory.
   end type psb_T_base_vect_type
 
   type psb_T_vect_type
-    class(psb_T_base_vect_type), allocatable :: v 
+    class(psb_T_base_vect_type), allocatable :: v
   end type  psb_T_vect_type
 
 \end{verbatim}
@@ -1036,9 +1036,9 @@ private memory.
 %   \begin{center}
 %     \fbox{\TheSbox}
 %   \end{center}
-  \caption{\label{fig:vectype} 
+  \caption{\label{fig:vectype}
     The PSBLAS defined data type that
-    contains a dense vector.} 
+    contains a dense vector.}
 \end{figure}
 
 \subsubsection{Vector Methods}
@@ -1176,7 +1176,7 @@ Scope: {\bf local}.\\
 \begin{description}
 \item[\bf On Return]
 \item[y] A copy of the input object.
-\item[info] Return code. 
+\item[info] Return code.
 \end{description}
 
 
@@ -1184,11 +1184,11 @@ Scope: {\bf local}.\\
 \label{sec:prec}
 Our base library  offers support for  simple well known preconditioners
 like Diagonal Scaling or Block Jacobi with incomplete
-factorization ILU(0). 
+factorization ILU(0).
 
  A preconditioner is held in the \hypertarget{precdata}{{\tt
-    psb\_prec\_type}} data structure reported in 
-figure~\ref{fig:prectype}. The \verb|psb_prec_type| 
+    psb\_prec\_type}} data structure reported in
+figure~\ref{fig:prectype}. The \verb|psb_prec_type|
 data type may contain a simple preconditioning matrix with the
 associated communication descriptor.%%  which may be different than the
 %% system communication descriptor in the case of parallel
@@ -1203,7 +1203,7 @@ associated communication descriptor.%%  which may be different than the
 %% This data structure wants to be flexible enough to easily allow the
 %% implementation of new kind of preconditioners.
 The internal preconditioner is allocated appropriately with the
-dynamic type corresponding to the desired preconditioner. 
+dynamic type corresponding to the desired preconditioner.
 \begin{figure}[h!]
   \small
   % \begin{Sbox}
@@ -1270,9 +1270,9 @@ Given a heap object, the following methods are defined on it:
 \item[free] Release memory.
 \end{description}
 These objects are used in MLD2P4 to implement the factorization
-algorithms. 
+algorithms.
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "userguide"
-%%% End: 
+%%% End:
